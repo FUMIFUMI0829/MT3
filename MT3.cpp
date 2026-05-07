@@ -355,6 +355,45 @@ Matrix4x4 MakeScaleMatrix(const Vector3& scale) {
 	return resultMatrix;
 }
 
+// X軸回転行列
+Matrix4x4 MakeRotateXMatrix(float radian) {
+	Matrix4x4 resultMatrix = MakeIdentity4x4();
+
+	resultMatrix.m[1][1] = std::cos(radian);
+	resultMatrix.m[1][2] = std::sin(radian);
+
+	resultMatrix.m[2][1] = -std::sin(radian);
+	resultMatrix.m[2][2] = std::cos(radian);
+
+	return resultMatrix;
+}
+
+// Y軸回転行列
+Matrix4x4 MakeRotateYMatrix(float radian) {
+	Matrix4x4 resultMatrix = MakeIdentity4x4();
+
+	resultMatrix.m[0][0] = std::cos(radian);
+	resultMatrix.m[0][2] = -std::sin(radian);
+
+	resultMatrix.m[2][0] = std::sin(radian);
+	resultMatrix.m[2][2] = std::cos(radian);
+
+	return resultMatrix;
+}
+
+// Z軸回転行列
+Matrix4x4 MakeRotateZMatrix(float radian) {
+	Matrix4x4 resultMatrix = MakeIdentity4x4();
+
+	resultMatrix.m[0][0] = std::cos(radian);
+	resultMatrix.m[0][1] = std::sin(radian);
+
+	resultMatrix.m[1][0] = -std::sin(radian);
+	resultMatrix.m[1][1] = std::cos(radian);
+
+	return resultMatrix;
+}
+
 // 画面表示
 void MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const char* label) {
 	Novice::ScreenPrintf(x, y, "%s", label);

@@ -61,6 +61,15 @@ Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
 // 拡大縮小行列
 Matrix4x4 MakeScaleMatrix(const Vector3& scale);
 
+// X軸回転行列
+Matrix4x4 MakeRotateXMatrix(float radian);
+
+// Y軸回転行列
+Matrix4x4 MakeRotateYMatrix(float radian);
+
+// Z軸回転行列
+Matrix4x4 MakeRotateZMatrix(float radian);
+
 // 画面表示
 void MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const char* label);
 //=================================================================================================//
