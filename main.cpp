@@ -14,7 +14,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		3.2f,0.7f,9.6f,4.4f,
 		5.5f,1.3f,7.8f,2.1f,
 		6.9f,8.0f,2.6f,1.0f,
-		0.5f,7.2f,5.1f,3.1f,
+		0.5f,7.2f,5.1f,3.3f,
 	};
 
 	Matrix4x4 m2{
