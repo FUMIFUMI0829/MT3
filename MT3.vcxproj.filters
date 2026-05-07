@@ -109,5 +109,6 @@
     <ClInclude Include="Vector2.h" />
     <ClInclude Include="MT3.h" />
     <ClInclude Include="Vector3.h" />
+    <ClInclude Include="Matrix4x4.h" />
   </ItemGroup>
 </Project>
