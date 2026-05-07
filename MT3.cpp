@@ -72,6 +72,25 @@ Vector3 Normalize(const Vector3& v) {
 	return result;
 }
 
+// 座標変換
+Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix) {
+	Vector3 result{};
+
+	result.x = vector.x * matrix.m[0][0] + vector.y * matrix.m[1][0] + vector.z * matrix.m[2][0] + matrix.m[3][0];
+	result.y = vector.x * matrix.m[0][1] + vector.y * matrix.m[1][1] + vector.z * matrix.m[2][1] + matrix.m[3][1];
+	result.z = vector.x * matrix.m[0][2] + vector.y * matrix.m[1][2] + vector.z * matrix.m[2][2] + matrix.m[3][2];
+
+	float w = vector.x * matrix.m[0][3] + vector.y * matrix.m[1][3] + vector.z * matrix.m[2][3] + matrix.m[3][3];
+
+	if (w != 0.0f) {
+		result.x /= w;
+		result.y /= w;
+		result.z /= w;
+	}
+
+	return result;
+}
+
 // 画面表示
 void VectorScreenPrintf(int x, int y, const Vector3& vector, const char* label) {
 	Novice::ScreenPrintf(x, y, "%.02f", vector.x);
@@ -129,7 +148,7 @@ Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
 }
 
 // 逆行列
-Matrix4x4 Inverse(const Matrix4x4 & m) {
+Matrix4x4 Inverse(const Matrix4x4& m) {
 	float a =
 		m.m[0][0] * m.m[1][1] * m.m[2][2] * m.m[3][3]
 		- m.m[0][0] * m.m[1][1] * m.m[2][3] * m.m[3][2]
@@ -309,6 +328,29 @@ Matrix4x4 MakeIdentity4x4() {
 	for (int i = 0; i < 4; ++i) {
 		resultMatrix.m[i][i] = 1.f;
 	}
+
+	return resultMatrix;
+}
+
+// 平行移動行列
+Matrix4x4 MakeTranslateMatrix(const Vector3& translate) {
+	Matrix4x4 resultMatrix = MakeIdentity4x4();
+
+	resultMatrix.m[3][0] = translate.x;
+	resultMatrix.m[3][1] = translate.y;
+	resultMatrix.m[3][2] = translate.z;
+
+	return resultMatrix;
+}
+
+// 拡大縮小行列
+Matrix4x4 MakeScaleMatrix(const Vector3& scale) {
+	Matrix4x4 resultMatrix{};
+
+	resultMatrix.m[0][0] = scale.x;
+	resultMatrix.m[1][1] = scale.y;
+	resultMatrix.m[2][2] = scale.z;
+	resultMatrix.m[3][3] = 1.0f;
 
 	return resultMatrix;
 }
