@@ -394,6 +394,30 @@ Matrix4x4 MakeRotateZMatrix(float radian) {
 	return resultMatrix;
 }
 
+// アフィン変換
+Matrix4x4  MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate) {
+
+	// 拡大縮小行列
+	Matrix4x4 scaleMatrix = MakeScaleMatrix(scale);
+
+	// 回転行列
+	Matrix4x4 rotateXMatrix = MakeRotateXMatrix(rotate.x);
+	Matrix4x4 rotateYMatrix = MakeRotateYMatrix(rotate.y);
+	Matrix4x4 rotateZMatrix = MakeRotateZMatrix(rotate.z);
+
+	// 平行移動行列
+	Matrix4x4 translateMatrix = MakeTranslateMatrix(translate);
+
+	// 回転行列を合成
+	Matrix4x4 rotateMatrix = Multiply(Multiply(rotateXMatrix, rotateYMatrix), rotateZMatrix);
+
+	// SRT
+	Matrix4x4 srMatrix = Multiply(scaleMatrix, rotateMatrix);
+	Matrix4x4 srtMatrix = Multiply(srMatrix, translateMatrix);
+
+	return srtMatrix;
+}
+
 // 画面表示
 void MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const char* label) {
 	Novice::ScreenPrintf(x, y, "%s", label);
