@@ -73,6 +73,15 @@ Matrix4x4 MakeRotateZMatrix(float radian);
 // アフィン変換
 Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
 
+// 透視射影行列
+Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip);
+
+// 正射影行列
+Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip);
+
+// ビューポート行列
+Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth);
+
 // 画面表示
 void MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const char* label);
 //=================================================================================================//

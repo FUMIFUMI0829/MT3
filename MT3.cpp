@@ -418,6 +418,47 @@ Matrix4x4  MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const V
 	return srtMatrix;
 }
 
+// 透視射影行列
+Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip) {
+	Matrix4x4 resultMatrix{};
+	float f = 1.f / std::tanf(fovY / 2.f);
+	resultMatrix.m[0][0] = f / aspectRatio;
+	resultMatrix.m[1][1] = f;
+	resultMatrix.m[2][2] = farClip / (farClip - nearClip);
+	resultMatrix.m[2][3] = 1.f;
+	resultMatrix.m[3][2] = (-nearClip * farClip) / (farClip - nearClip);
+
+	return resultMatrix;
+}
+
+// 正射影行列
+Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip) {
+	Matrix4x4 resultMatrix{};
+	resultMatrix.m[0][0] = 2.f / (right - left);
+	resultMatrix.m[1][1] = 2.f / (top - bottom);
+	resultMatrix.m[2][2] = 1.f / (farClip - nearClip);
+	resultMatrix.m[3][0] = (left + right) / (left - right);
+	resultMatrix.m[3][1] = (top + bottom) / (bottom - top);
+	resultMatrix.m[3][2] = nearClip / (nearClip - farClip);
+	resultMatrix.m[3][3] = 1.f;
+
+	return resultMatrix;
+}
+
+// ビューポート行列
+Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth) {
+	Matrix4x4 resultMatrix{};
+	resultMatrix.m[0][0] = width / 2.f;
+	resultMatrix.m[1][1] = -height / 2.f;
+	resultMatrix.m[2][2] = maxDepth - minDepth;
+	resultMatrix.m[3][0] = left + (width / 2.f);
+	resultMatrix.m[3][1] = top + (height / 2.f);
+	resultMatrix.m[3][2] = minDepth;
+	resultMatrix.m[3][3] = 1.f;
+
+	return resultMatrix;
+}
+
 // 画面表示
 void MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const char* label) {
 	Novice::ScreenPrintf(x, y, "%s", label);
