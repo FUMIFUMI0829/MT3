@@ -29,6 +29,9 @@ Vector3 Normalize(const Vector3& v);
 // 座標変換
 Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix);
 
+// クロス積
+Vector3 Cross(const Vector3& v1, const Vector3& v2);
+
 // 画面表示
 void VectorScreenPrintf(int x, int y, const Vector3& vector, const char* label);
 //=================================================================================================//
