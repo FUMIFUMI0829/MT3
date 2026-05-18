@@ -1,0 +1,10 @@
+﻿#pragma once
+#include "MT3.h"
+
+struct Sphere {
+	Vector3 center;
+	float radius;
+};
+
+void DrawSphere(const Sphere& sphere, const Matrix4x4 viewProjectionMatrix, const Matrix4x4 viewportMatrix, unsigned int color);
+

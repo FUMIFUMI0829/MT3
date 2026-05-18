@@ -23,6 +23,9 @@
     <ClCompile Include="MT3.cpp">
       <Filter>KamataEngine</Filter>
     </ClCompile>
+    <ClCompile Include="Sphere.cpp">
+      <Filter>KamataEngine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C:\KamataEngine\DirectXGame\audio\Audio.h">
@@ -110,5 +113,6 @@
     <ClInclude Include="MT3.h" />
     <ClInclude Include="Vector3.h" />
     <ClInclude Include="Matrix4x4.h" />
+    <ClInclude Include="Sphere.h" />
   </ItemGroup>
 </Project>

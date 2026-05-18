@@ -480,3 +480,46 @@ void MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const char* label
 	}
 }
 //=================================================================================================//
+
+//=================================================================================================//
+// Grid表示
+
+void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix) {
+	const float kGridHalfWidth = 2.f;
+	const int kSubdivision = 10;
+	const float kGridEvery = (kGridHalfWidth * 2.f) / float(kSubdivision);
+	// 奥から手前への線を徐々に引いていく
+	for (int xIndex = 0; xIndex <= kSubdivision; ++xIndex) {
+		// 今引いている線の座標
+		float x = -kGridHalfWidth + (xIndex * kGridEvery);
+
+		// ワールド座標
+		Vector3 start = { x,0.0f,-kGridHalfWidth };
+		Vector3 end = { x,0.0f, kGridHalfWidth };
+
+		// スクリーン座標変換
+		Vector3 screenStart = Transform(Transform(start, viewProjectionMatrix), viewportMatrix);
+		Vector3 screenEnd = Transform(Transform(end, viewProjectionMatrix), viewportMatrix);
+
+		// 線を引く
+		Novice::DrawLine(int(screenStart.x), int(screenStart.y), int(screenEnd.x), int(screenEnd.y), 0x000000FF);
+	}
+	// 左から右への線を徐々に引いていく
+	for (int zIndex = 0; zIndex <= kSubdivision; ++zIndex) {
+		// 今引いている線の座標
+		float z = -kGridHalfWidth + (zIndex * kGridEvery);
+
+		// ワールド座標
+		Vector3 start = { -kGridHalfWidth,0.0f,z };
+		Vector3 end = { kGridHalfWidth,0.0f, z };
+
+		// スクリーン座標変換
+		Vector3 screenStart = Transform(Transform(start, viewProjectionMatrix), viewportMatrix);
+		Vector3 screenEnd = Transform(Transform(end, viewProjectionMatrix), viewportMatrix);
+
+		// 線を引く
+		Novice::DrawLine(int(screenStart.x), int(screenStart.y), int(screenEnd.x), int(screenEnd.y), 0x000000FF);
+	}
+
+}
+//=================================================================================================//

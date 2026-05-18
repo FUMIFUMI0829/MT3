@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Vector3.h"
 #include "Matrix4x4.h"
+#include "Sphere.h"
 
 inline constexpr int kColumnWidth = 60;
 inline constexpr int kRowHeight = 20;
@@ -87,4 +88,12 @@ Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, f
 
 // 画面表示
 void MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const char* label);
+//=================================================================================================//
+
+
+//=================================================================================================//
+// Grid表示
+
+void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix);
+
 //=================================================================================================//
