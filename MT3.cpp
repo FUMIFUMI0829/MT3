@@ -102,6 +102,26 @@ Vector3 Cross(const Vector3& v1, const Vector3& v2) {
 	return result;
 }
 
+Vector3 Project(const Vector3& v1, const Vector3& v2) {
+	float dot = Dot(v1, v2);
+	float length = Dot(v2, v2);
+
+	Vector3 result = Multiply(dot / length, v2);
+
+	return result;
+}
+
+// 最近接点
+Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
+	Vector3 originToPoint = Subtract(point, segment.origin);
+
+	Vector3 project = Project(originToPoint, segment.diff);
+
+	Vector3 closestPoint = Add(segment.origin, project);
+
+	return closestPoint;
+}
+
 // 画面表示
 void VectorScreenPrintf(int x, int y, const Vector3& vector, const char* label) {
 	Novice::ScreenPrintf(x, y, "%.02f", vector.x);
