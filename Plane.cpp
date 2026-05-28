@@ -11,17 +11,6 @@ Vector3 Perpendicular(const Vector3& vector) {
 	return { 0.0f, -vector.z, vector.y };
 }
 
-bool IsCollision(const Sphere& sphere, const Plane& plane) {
-
-	float distance = Dot(plane.normal, sphere.center) - plane.distance;
-
-	if (std::abs(distance) <= sphere.radius) {
-		return true;
-	}
-
-	return false;
-}
-
 
 void DrawPlane(
 	const Plane& plane,

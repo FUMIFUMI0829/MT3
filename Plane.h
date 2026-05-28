@@ -9,6 +9,4 @@ struct Plane {
 
 Vector3 Perpendicular(const Vector3& vector);
 
-bool IsCollision(const Sphere& sphere, const Plane& plane);
-
 void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color);
