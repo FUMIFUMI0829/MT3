@@ -22,6 +22,7 @@ bool IsCollision(const Sphere& sphere, const Plane& plane) {
 	return false;
 }
 
+
 void DrawPlane(
 	const Plane& plane,
 	const Matrix4x4& viewProjectionMatrix,

@@ -543,3 +543,47 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 
 }
 //=================================================================================================//
+
+bool IsCollision(const Segment& segment, const Plane& plane) {
+
+	float start = Dot(segment.origin, plane.normal) - plane.distance;
+
+	Vector3 endPoint = Add(segment.origin, segment.diff);
+
+	float end = Dot(endPoint, plane.normal) - plane.distance;
+
+	if (start * end <= 0.0f) {
+		return true;
+	}
+
+	return false;
+}
+
+bool IsCollision(const Sphere& s1, const Sphere& s2) {
+
+	// 中心点同士の差分
+	Vector3 diff{
+		s2.center.x - s1.center.x,
+		s2.center.y - s1.center.y,
+		s2.center.z - s1.center.z
+	};
+
+	// 距離の二乗
+	float distanceSquared =
+		diff.x * diff.x +
+		diff.y * diff.y +
+		diff.z * diff.z;
+
+	// 半径の合計
+	float radius = s1.radius + s2.radius;
+
+	// 半径の合計の二乗
+	float radiusSquared = radius * radius;
+
+	// 衝突判定
+	if (distanceSquared <= radiusSquared) {
+		return true;
+	}
+
+	return false;
+}

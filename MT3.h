@@ -2,6 +2,7 @@
 #include "Vector3.h"
 #include "Matrix4x4.h"
 #include "Sphere.h"
+#include "Plane.h"
 
 inline constexpr int kColumnWidth = 60;
 inline constexpr int kRowHeight = 20;
@@ -118,3 +119,9 @@ void MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const char* label
 void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix);
 
 //=================================================================================================//
+
+bool IsCollision(const Sphere& sphere, const Plane& plane);
+
+bool IsCollision(const Sphere& sphere1, const Sphere& sphere2);
+
+bool IsCollision(const Segment& segment, const Plane& plane);
