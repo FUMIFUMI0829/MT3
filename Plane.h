@@ -1,6 +1,6 @@
 ﻿#pragma once
-#include "MT3.h"
-#include "Sphere.h"
+#include "Vector3.h"
+#include "Matrix4x4.h"
 
 struct Plane {
 	Vector3 normal;

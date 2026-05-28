@@ -51,7 +51,7 @@ Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix);
 Vector3 Cross(const Vector3& v1, const Vector3& v2);
 
 Vector3 Project(const Vector3& v1, const Vector3& v2);
-	
+
 // 最近接点
 Vector3 ClosestPoint(const Vector3& point, const Segment& segment);
 
@@ -125,3 +125,5 @@ bool IsCollision(const Sphere& sphere, const Plane& plane);
 bool IsCollision(const Sphere& sphere1, const Sphere& sphere2);
 
 bool IsCollision(const Segment& segment, const Plane& plane);
+
+void DrawSegment(const Segment& segment, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color);

@@ -1,6 +1,7 @@
 ﻿#include "Plane.h"
 #include <Novice.h>
 #include <cmath>
+#include "MT3.h"
 
 Vector3 Perpendicular(const Vector3& vector) {
 

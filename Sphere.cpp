@@ -2,7 +2,7 @@
 #include <cmath>
 #include <numbers>
 #include <Novice.h>
-
+#include "MT3.h"
 
 void DrawSphere(const Sphere& sphere, const Matrix4x4 viewProjectionMatrix, const Matrix4x4 viewportMatrix, unsigned int color) {
 	const int kSubdivision = 16;

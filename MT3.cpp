@@ -543,6 +543,27 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 
 }
 //=================================================================================================//
+bool IsCollision(const Sphere& sphere, const Plane& plane) {
+
+	float distance = Dot(plane.normal, sphere.center) - plane.distance;
+
+	if (std::abs(distance) <= sphere.radius) {
+		return true;
+	}
+
+	return false;
+}
+
+bool IsCollision(const Sphere& sphere1, const Sphere& sphere2) {
+
+	float distance = Length(Subtract(sphere1.center, sphere2.center));
+
+	if (distance <= sphere1.radius + sphere2.radius) {
+		return true;
+	}
+
+	return false;
+}
 
 bool IsCollision(const Segment& segment, const Plane& plane) {
 
@@ -559,31 +580,22 @@ bool IsCollision(const Segment& segment, const Plane& plane) {
 	return false;
 }
 
-bool IsCollision(const Sphere& s1, const Sphere& s2) {
+void DrawSegment(const Segment& segment, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color) {
 
-	// 中心点同士の差分
-	Vector3 diff{
-		s2.center.x - s1.center.x,
-		s2.center.y - s1.center.y,
-		s2.center.z - s1.center.z
-	};
+	Vector3 start = segment.origin;
+	Vector3 end = Add(segment.origin, segment.diff);
 
-	// 距離の二乗
-	float distanceSquared =
-		diff.x * diff.x +
-		diff.y * diff.y +
-		diff.z * diff.z;
+	start = Transform(start, viewProjectionMatrix);
+	start = Transform(start, viewportMatrix);
 
-	// 半径の合計
-	float radius = s1.radius + s2.radius;
+	end = Transform(end, viewProjectionMatrix);
+	end = Transform(end, viewportMatrix);
 
-	// 半径の合計の二乗
-	float radiusSquared = radius * radius;
-
-	// 衝突判定
-	if (distanceSquared <= radiusSquared) {
-		return true;
-	}
-
-	return false;
+	Novice::DrawLine(
+		static_cast<int>(start.x),
+		static_cast<int>(start.y),
+		static_cast<int>(end.x),
+		static_cast<int>(end.y),
+		color
+	);
 }
