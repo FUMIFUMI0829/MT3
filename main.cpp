@@ -1,7 +1,9 @@
 ﻿#include <Novice.h>
 #include "Vector2.h"
 #include "MT3.h"
+#include "Plane.h"
 #include <imgui.h>
+#include <cmath>
 
 const char kWindowTitle[] = "LE2B_11_コウサカ_タカフミ";
 const int kWindowWidth = 1280;
@@ -11,10 +13,16 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 	Novice::Initialize(kWindowTitle, kWindowWidth, kWindowHeight);
 
-	Segment segment{ {-2.0f, -1.0f, 0.0f}, {3.0f, 2.0f, 2.0f} };
-	Vector3 point{ -1.5f, 0.0f, 0.6f };
+	Sphere sphere{
+		{0.0f, 0.0f, 0.0f},
+		0.5f
+	};
 
-	Sphere sphere{};
+	Plane plane{
+		{0.0f, 1.0f, 0.0f},
+		0.0f
+	};
+
 	Vector3 cameraTranslate{ 0.0f, 1.9f, -6.49f };
 	Vector3 cameraRotate{ 0.26f, 0.0f, 0.0f };
 
@@ -42,23 +50,33 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
-		Vector3 project = Project(Subtract(point, segment.origin), segment.diff);
-		Vector3 closestPoint = ClosestPoint(point, segment);
-
-		Sphere pointSphere{ point, 0.01f };
-		Sphere closestPointSphere{ closestPoint, 0.01f };
-
 #ifdef USE_IMGUI
 		ImGui::Begin("Window");
+
 		ImGui::DragFloat3("CameraTranslate", &cameraTranslate.x, 0.01f);
 		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
-		ImGui::DragFloat3("Point", &point.x, 0.01f);
-		ImGui::DragFloat3("SegmentOrigin", &segment.origin.x, 0.01f);
-		ImGui::DragFloat3("SegmentDiff", &segment.diff.x, 0.01f);
-		ImGui::InputFloat3("Project", &project.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
-		ImGui::InputFloat3("ClosestPoint", &closestPoint.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
+
+		ImGui::DragFloat3("SphereCenter", &sphere.center.x, 0.01f);
+		ImGui::DragFloat("SphereRadius", &sphere.radius, 0.01f);
+
+		ImGui::DragFloat3("PlaneNormal", &plane.normal.x, 0.01f);
+		ImGui::DragFloat("PlaneDistance", &plane.distance, 0.01f);
+
 		ImGui::End();
 #endif
+
+		// 法線は単位ベクトル前提なので正規化する
+		plane.normal = Normalize(plane.normal);
+
+		// 球の中心と平面の距離
+		float distance = Dot(plane.normal, sphere.center) - plane.distance;
+
+		unsigned int sphereColor = WHITE;
+
+		// 距離が半径以下なら衝突
+		if (std::abs(distance) <= sphere.radius) {
+			sphereColor = RED;
+		}
 
 		///
 		/// ↑更新処理ここまで
@@ -70,19 +88,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 
-		Vector3 start = Transform(Transform(segment.origin, viewProjectionMatrix), viewportMatrix);
-		Vector3 end = Transform(Transform(Add(segment.origin, segment.diff), viewProjectionMatrix), viewportMatrix);
-
-		Novice::DrawLine(
-			static_cast<int>(start.x),
-			static_cast<int>(start.y),
-			static_cast<int>(end.x),
-			static_cast<int>(end.y),
-			WHITE
-		);
-
-		DrawSphere(pointSphere, viewProjectionMatrix, viewportMatrix, RED);
-		DrawSphere(closestPointSphere, viewProjectionMatrix, viewportMatrix, BLACK);
+		DrawPlane(plane, viewProjectionMatrix, viewportMatrix, WHITE);
+		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, sphereColor);
 
 		///
 		/// ↑描画処理ここまで
