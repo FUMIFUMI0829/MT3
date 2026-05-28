@@ -22,6 +22,9 @@ struct Segment {
 	Vector3 diff;
 };
 
+struct Triangle {
+	Vector3 vertices[3];
+};
 
 //=================================================================================================//
 // Vector3
@@ -127,3 +130,7 @@ bool IsCollision(const Sphere& sphere1, const Sphere& sphere2);
 bool IsCollision(const Segment& segment, const Plane& plane);
 
 void DrawSegment(const Segment& segment, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color);
+
+bool IsCollision(const Triangle& triangle, const Segment& segment);
+
+void DrawTriangle(const Triangle& triangle, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color);

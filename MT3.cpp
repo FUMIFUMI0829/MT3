@@ -599,3 +599,72 @@ void DrawSegment(const Segment& segment, const Matrix4x4& viewProjectionMatrix, 
 		color
 	);
 }
+
+bool IsCollision(const Triangle& triangle, const Segment& segment) {
+
+	// 三角形の法線を求める
+	Vector3 v01 = Subtract(triangle.vertices[1], triangle.vertices[0]);
+	Vector3 v02 = Subtract(triangle.vertices[2], triangle.vertices[0]);
+
+	Vector3 normal = Normalize(Cross(v01, v02));
+
+	// 三角形がある平面を作る
+	Plane plane{};
+	plane.normal = normal;
+	plane.distance = Dot(triangle.vertices[0], normal);
+
+	// 線分と平面が衝突していなければ終了
+	if (IsCollision(segment, plane) == false) {
+		return false;
+	}
+
+	// 線分と平面の交点を求める
+	float start = Dot(segment.origin, plane.normal) - plane.distance;
+	float end = Dot(Add(segment.origin, segment.diff), plane.normal) - plane.distance;
+
+	float t = start / (start - end);
+
+	Vector3 point = Add(segment.origin, Multiply(t, segment.diff));
+
+	// 三角形の各辺ベクトル
+	Vector3 edge01 = Subtract(triangle.vertices[1], triangle.vertices[0]);
+	Vector3 edge12 = Subtract(triangle.vertices[2], triangle.vertices[1]);
+	Vector3 edge20 = Subtract(triangle.vertices[0], triangle.vertices[2]);
+
+	// 各頂点から交点へのベクトル
+	Vector3 v0p = Subtract(point, triangle.vertices[0]);
+	Vector3 v1p = Subtract(point, triangle.vertices[1]);
+	Vector3 v2p = Subtract(point, triangle.vertices[2]);
+
+	// 外積
+	Vector3 cross01 = Cross(edge01, v0p);
+	Vector3 cross12 = Cross(edge12, v1p);
+	Vector3 cross20 = Cross(edge20, v2p);
+
+	// 全部法線と同じ向きなら三角形の内側
+	if (Dot(cross01, normal) >= 0.0f && Dot(cross12, normal) >= 0.0f && Dot(cross20, normal) >= 0.0f) {
+		return true;
+	}
+
+	return false;
+}
+
+void DrawTriangle(const Triangle& triangle, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color) {
+
+	Vector3 screenVertices[3]{};
+
+	for (int i = 0; i < 3; ++i) {
+		Vector3 ndcVertex = Transform(triangle.vertices[i], viewProjectionMatrix);
+		screenVertices[i] = Transform(ndcVertex, viewportMatrix);
+	}
+
+	Novice::DrawTriangle(
+		static_cast<int>(screenVertices[0].x),
+		static_cast<int>(screenVertices[0].y),
+		static_cast<int>(screenVertices[1].x),
+		static_cast<int>(screenVertices[1].y),
+		static_cast<int>(screenVertices[2].x),
+		static_cast<int>(screenVertices[2].y),
+		color,
+		kFillModeWireFrame);
+}

@@ -18,9 +18,12 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		{2.0f, -2.0f, 0.0f}
 	};
 
-	Plane plane{
-		{0.0f, 1.0f, 0.0f},
-		0.0f
+	Triangle triangle{
+		{
+			{-1.0f, 0.0f, 0.0f},
+			{1.0f, 0.0f, 0.0f},
+			{0.0f, 1.5f, 0.0f}
+		}
 	};
 
 	Vector3 cameraTranslate{ 0.0f, 1.9f, -6.49f };
@@ -54,17 +57,16 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		ImGui::DragFloat3("SegmentOrigin", &segment.origin.x, 0.01f);
 		ImGui::DragFloat3("SegmentDiff", &segment.diff.x, 0.01f);
 
-		ImGui::DragFloat3("PlaneNormal", &plane.normal.x, 0.01f);
-		ImGui::DragFloat("PlaneDistance", &plane.distance, 0.01f);
+		ImGui::DragFloat3("TriangleVertex0", &triangle.vertices[0].x, 0.01f);
+		ImGui::DragFloat3("TriangleVertex1", &triangle.vertices[1].x, 0.01f);
+		ImGui::DragFloat3("TriangleVertex2", &triangle.vertices[2].x, 0.01f);
 
 		ImGui::End();
 #endif
 
-		plane.normal = Normalize(plane.normal);
-
 		unsigned int segmentColor = WHITE;
 
-		if (IsCollision(segment, plane)) {
+		if (IsCollision(triangle, segment)) {
 			segmentColor = RED;
 		}
 
@@ -78,17 +80,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 
-		DrawPlane(plane, viewProjectionMatrix, viewportMatrix, WHITE);
-
-		Sphere startPoint{
-			segment.origin,
-			0.01f
-		};
-
-		Sphere endPoint{
-			Add(segment.origin, segment.diff),
-			0.01f
-		};
+		DrawTriangle(triangle, viewProjectionMatrix, viewportMatrix, WHITE);
 
 		DrawSegment(segment, viewProjectionMatrix, viewportMatrix, segmentColor);
 
@@ -104,5 +96,6 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	}
 
 	Novice::Finalize();
+
 	return 0;
 }
