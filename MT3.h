@@ -66,7 +66,7 @@ void VectorScreenPrintf(int x, int y, const Vector3& vector, const char* label);
 Matrix4x4 Add(const Matrix4x4& m1, const Matrix4x4& m2);
 
 // 減算
-Matrix4x4 Subtruct(const Matrix4x4& m1, const Matrix4x4& m2);
+Matrix4x4 Subtract(const Matrix4x4& m1, const Matrix4x4& m2);
 
 // 行列の積
 Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2);

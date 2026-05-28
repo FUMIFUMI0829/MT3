@@ -65,16 +65,11 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		ImGui::End();
 #endif
 
-		// 法線は単位ベクトル前提なので正規化する
 		plane.normal = Normalize(plane.normal);
-
-		// 球の中心と平面の距離
-		float distance = Dot(plane.normal, sphere.center) - plane.distance;
 
 		unsigned int sphereColor = WHITE;
 
-		// 距離が半径以下なら衝突
-		if (std::abs(distance) <= sphere.radius) {
+		if (IsCollision(sphere, plane)) {
 			sphereColor = RED;
 		}
 

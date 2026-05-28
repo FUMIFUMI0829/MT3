@@ -149,7 +149,7 @@ Matrix4x4 Add(const Matrix4x4& m1, const Matrix4x4& m2) {
 }
 
 // 減算
-Matrix4x4 Subtruct(const Matrix4x4& m1, const Matrix4x4& m2) {
+Matrix4x4 Subtract(const Matrix4x4& m1, const Matrix4x4& m2) {
 	Matrix4x4 resultMatrix{};
 
 	for (int row = 0; row < 4; ++row) {
