@@ -18,9 +18,9 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		0.5f
 	};
 
-	Plane plane{
+	Sphere sphere2{
 		{0.0f, 1.0f, 0.0f},
-		0.0f
+		0.5f
 	};
 
 	Vector3 cameraTranslate{ 0.0f, 1.9f, -6.49f };
@@ -59,17 +59,17 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		ImGui::DragFloat3("SphereCenter", &sphere.center.x, 0.01f);
 		ImGui::DragFloat("SphereRadius", &sphere.radius, 0.01f);
 
-		ImGui::DragFloat3("PlaneNormal", &plane.normal.x, 0.01f);
-		ImGui::DragFloat("PlaneDistance", &plane.distance, 0.01f);
+		ImGui::DragFloat3("Sphere2Center", &sphere2.center.x, 0.01f);
+		ImGui::DragFloat("Sphere2Radius", &sphere2.radius, 0.01f);
 
 		ImGui::End();
 #endif
 
-		plane.normal = Normalize(plane.normal);
+	
 
 		unsigned int sphereColor = WHITE;
 
-		if (IsCollision(sphere, plane)) {
+		if (IsCollision(sphere, sphere2)) {
 			sphereColor = RED;
 		}
 
@@ -83,8 +83,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 
-		DrawPlane(plane, viewProjectionMatrix, viewportMatrix, WHITE);
 		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, sphereColor);
+		DrawSphere(sphere2, viewProjectionMatrix, viewportMatrix, WHITE);
 
 		///
 		/// ↑描画処理ここまで
