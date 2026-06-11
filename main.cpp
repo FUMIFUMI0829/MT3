@@ -18,10 +18,10 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		.max{0.0f,0.0f,0.0f},
 		.min{-0.5f,-0.5f,-0.5f},
 	};
-	
-	Sphere sphere{
-		.center{0.f,0.f,0.f},
-		.radius{1.f},
+
+	Segment segment{
+		.origin{-0.7f,0.3f,0.0f},
+		.diff{2.0f,-0.5f,0.0f},
 	};
 
 	Vector3 cameraTranslate{ 0.0f, 1.9f, -6.49f };
@@ -53,7 +53,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		aabb1.min.z = (std::min)(aabb1.min.z, aabb1.max.z);
 		aabb1.max.z = (std::max)(aabb1.min.z, aabb1.max.z);
 
-	
+
 
 #ifdef USE_IMGUI
 		ImGui::Begin("Window");
@@ -64,15 +64,15 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		ImGui::DragFloat3("aabb.min", &aabb1.min.x, 0.01f);
 		ImGui::DragFloat3("aabb.max", &aabb1.max.x, 0.01f);
 
-		ImGui::DragFloat3("SphereCenter", &sphere.center.x, 0.01f);
-		ImGui::DragFloat("SphereRadius", &sphere.radius, 0.01f);
-	
+		ImGui::DragFloat("SegmentOrigin", &segment.origin.x, 0.01f);
+		ImGui::DragFloat3("SegmentDiff", &segment.diff.x, 0.01f);
+
 		ImGui::End();
 #endif
 
 		unsigned int objColor = WHITE;
 
-		if (IsCollision(aabb1, sphere)) {
+		if (IsCollision(aabb1, segment)) {
 			objColor = RED;
 		}
 
@@ -85,9 +85,9 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		///
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
-	
-		DrawAABB(aabb1, viewProjectionMatrix, viewportMatrix,objColor);
-		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, objColor);
+
+		DrawAABB(aabb1, viewProjectionMatrix, viewportMatrix, objColor);
+		DrawSegment(segment, viewProjectionMatrix, viewportMatrix, objColor);
 		///
 		/// ↑描画処理ここまで
 		///
