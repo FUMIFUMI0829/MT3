@@ -18,10 +18,10 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		.max{0.0f,0.0f,0.0f},
 		.min{-0.5f,-0.5f,-0.5f},
 	};
-
-	AABB aabb2{
-		.max{1.0f,1.0f,1.0f},
-		.min{0.2f,0.2f,0.2f},
+	
+	Sphere sphere{
+		.center{0.f,0.f,0.f},
+		.radius{1.f},
 	};
 
 	Vector3 cameraTranslate{ 0.0f, 1.9f, -6.49f };
@@ -53,12 +53,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		aabb1.min.z = (std::min)(aabb1.min.z, aabb1.max.z);
 		aabb1.max.z = (std::max)(aabb1.min.z, aabb1.max.z);
 
-		aabb2.min.x = (std::min)(aabb2.min.x, aabb2.max.x);
-		aabb2.max.x = (std::max)(aabb2.min.x, aabb2.max.x);
-		aabb2.min.y = (std::min)(aabb2.min.y, aabb2.max.y);
-		aabb2.max.y = (std::max)(aabb2.min.y, aabb2.max.y);
-		aabb2.min.z = (std::min)(aabb2.min.z, aabb2.max.z);
-		aabb2.max.z = (std::max)(aabb2.min.z, aabb2.max.z);
+	
 
 #ifdef USE_IMGUI
 		ImGui::Begin("Window");
@@ -66,19 +61,19 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		ImGui::DragFloat3("CameraTranslate", &cameraTranslate.x, 0.01f);
 		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
 
-		ImGui::DragFloat3("aabb1.min", &aabb1.min.x, 0.01f);
-		ImGui::DragFloat3("aabb1.max", &aabb1.max.x, 0.01f);
+		ImGui::DragFloat3("aabb.min", &aabb1.min.x, 0.01f);
+		ImGui::DragFloat3("aabb.max", &aabb1.max.x, 0.01f);
 
-		ImGui::DragFloat3("aabb2.min", &aabb2.min.x, 0.01f);
-		ImGui::DragFloat3("aabb2.max", &aabb2.max.x, 0.01f);
+		ImGui::DragFloat3("SphereCenter", &sphere.center.x, 0.01f);
+		ImGui::DragFloat("SphereRadius", &sphere.radius, 0.01f);
 	
 		ImGui::End();
 #endif
 
-		unsigned int aabbColor = WHITE;
+		unsigned int objColor = WHITE;
 
-		if (IsCollision(aabb1, aabb2)) {
-			aabbColor = RED;
+		if (IsCollision(aabb1, sphere)) {
+			objColor = RED;
 		}
 
 		///
@@ -91,8 +86,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 	
-		DrawAABB(aabb1, viewProjectionMatrix, viewportMatrix,aabbColor);
-		DrawAABB(aabb2, viewProjectionMatrix, viewportMatrix, aabbColor);
+		DrawAABB(aabb1, viewProjectionMatrix, viewportMatrix,objColor);
+		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, objColor);
 		///
 		/// ↑描画処理ここまで
 		///
