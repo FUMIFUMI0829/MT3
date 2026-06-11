@@ -1,6 +1,7 @@
 ﻿#include "MT3.h"
 #include "Novice.h"
 #include <cmath>
+#include <algorithm>
 
 //=================================================================================================//
 // Vector3
@@ -667,4 +668,97 @@ void DrawTriangle(const Triangle& triangle, const Matrix4x4& viewProjectionMatri
 		static_cast<int>(screenVertices[2].y),
 		color,
 		kFillModeWireFrame);
+}
+
+bool IsCollision(const AABB& aabb1, const AABB& aabb2) {
+	if ((aabb1.min.x <= aabb2.max.x && aabb1.max.x >= aabb2.min.x) &&
+		(aabb1.min.y <= aabb2.max.y && aabb1.max.y >= aabb2.min.y) &&
+		(aabb1.min.z <= aabb2.max.z && aabb1.max.z >= aabb2.min.z)) {
+		return true;
+	}
+
+	return false;
+}
+
+bool IsCollision(const AABB& aabb1, const Sphere& sphere) {
+	Vector3 closestpoint{
+		std::clamp(sphere.center.x,aabb1.min.x,aabb1.max.x),
+		std::clamp(sphere.center.y,aabb1.min.y,aabb1.max.y),
+		std::clamp(sphere.center.z,aabb1.min.z,aabb1.max.z)
+	};
+	float distance = Length(Vector3{ (closestpoint.x - sphere.center.x), (closestpoint.y - sphere.center.y), (closestpoint.z - sphere.center.z) });
+	
+	if (distance <= sphere.radius) {
+		return true;
+	}
+
+	return false;
+}
+
+bool IsCollision(const AABB& aabb, const Segment& segment) {
+	float txMin = (aabb.min.x - segment.origin.x) / segment.diff.x;
+	float txMax = (aabb.max.x - segment.origin.x) / segment.diff.x;
+
+	float tyMin = (aabb.min.y - segment.origin.y) / segment.diff.y;
+	float tyMax = (aabb.max.y - segment.origin.y) / segment.diff.y;
+
+	float tzMin = (aabb.min.z - segment.origin.z) / segment.diff.z;
+	float tzMax = (aabb.max.z - segment.origin.z) / segment.diff.z;
+
+	float tNearX = min(txMin, txMax);
+	float tFarX = max(txMin, txMax);
+
+	float tNearY = min(tyMin, tyMax);
+	float tFarY = max(tyMin, tyMax);
+
+	float tNearZ = min(tzMin, tzMax);
+	float tFarZ = max(tzMin, tzMax);
+
+	float tMin = max(max(tNearX, tNearY), tNearZ);
+	float tMax = min(min(tFarX, tFarY), tFarZ);
+
+	if (tMin <= tMax &&	tMin <= 1.0f &&	tMax >= 0.0f) {
+		return true;
+	}
+
+	return false;
+}
+
+void DrawAABB(const AABB& aabb, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color) {
+	Vector3 vertices[8];
+
+	vertices[0] = { aabb.min.x, aabb.min.y, aabb.min.z };
+	vertices[1] = { aabb.max.x, aabb.min.y, aabb.min.z };
+	vertices[2] = { aabb.min.x, aabb.max.y, aabb.min.z };
+	vertices[3] = { aabb.max.x, aabb.max.y, aabb.min.z };
+
+	vertices[4] = { aabb.min.x, aabb.min.y, aabb.max.z };
+	vertices[5] = { aabb.max.x, aabb.min.y, aabb.max.z };
+	vertices[6] = { aabb.min.x, aabb.max.y, aabb.max.z };
+	vertices[7] = { aabb.max.x, aabb.max.y, aabb.max.z };
+
+	Vector3 screenVertices[8];
+
+	for (int i = 0; i < 8; ++i) {
+		Vector3 ndcVertex = Transform(vertices[i], viewProjectionMatrix);
+		screenVertices[i] = Transform(ndcVertex, viewportMatrix);
+	}
+
+	// 手前側
+	Novice::DrawLine((int)screenVertices[0].x, (int)screenVertices[0].y, (int)screenVertices[1].x, (int)screenVertices[1].y, color);
+	Novice::DrawLine((int)screenVertices[1].x, (int)screenVertices[1].y, (int)screenVertices[3].x, (int)screenVertices[3].y, color);
+	Novice::DrawLine((int)screenVertices[3].x, (int)screenVertices[3].y, (int)screenVertices[2].x, (int)screenVertices[2].y, color);
+	Novice::DrawLine((int)screenVertices[2].x, (int)screenVertices[2].y, (int)screenVertices[0].x, (int)screenVertices[0].y, color);
+
+	// 奥側
+	Novice::DrawLine((int)screenVertices[4].x, (int)screenVertices[4].y, (int)screenVertices[5].x, (int)screenVertices[5].y, color);
+	Novice::DrawLine((int)screenVertices[5].x, (int)screenVertices[5].y, (int)screenVertices[7].x, (int)screenVertices[7].y, color);
+	Novice::DrawLine((int)screenVertices[7].x, (int)screenVertices[7].y, (int)screenVertices[6].x, (int)screenVertices[6].y, color);
+	Novice::DrawLine((int)screenVertices[6].x, (int)screenVertices[6].y, (int)screenVertices[4].x, (int)screenVertices[4].y, color);
+
+	// 手前と奥をつなぐ線
+	Novice::DrawLine((int)screenVertices[0].x, (int)screenVertices[0].y, (int)screenVertices[4].x, (int)screenVertices[4].y, color);
+	Novice::DrawLine((int)screenVertices[1].x, (int)screenVertices[1].y, (int)screenVertices[5].x, (int)screenVertices[5].y, color);
+	Novice::DrawLine((int)screenVertices[2].x, (int)screenVertices[2].y, (int)screenVertices[6].x, (int)screenVertices[6].y, color);
+	Novice::DrawLine((int)screenVertices[3].x, (int)screenVertices[3].y, (int)screenVertices[7].x, (int)screenVertices[7].y, color);
 }

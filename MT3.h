@@ -26,6 +26,11 @@ struct Triangle {
 	Vector3 vertices[3];
 };
 
+struct AABB {
+	Vector3 max;
+	Vector3 min;
+};
+
 //=================================================================================================//
 // Vector3
 
@@ -129,8 +134,17 @@ bool IsCollision(const Sphere& sphere1, const Sphere& sphere2);
 
 bool IsCollision(const Segment& segment, const Plane& plane);
 
-void DrawSegment(const Segment& segment, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color);
-
 bool IsCollision(const Triangle& triangle, const Segment& segment);
 
+bool IsCollision(const AABB& aabb1, const AABB& aabb2);
+
+bool IsCollision(const AABB& aabb1, const Sphere& sphere);
+
+bool IsCollision(const AABB& aabb, const Segment& segment);
+
+void DrawSegment(const Segment& segment, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color);
+
 void DrawTriangle(const Triangle& triangle, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color);
+
+void DrawAABB(const AABB& aabb1, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color);
+
