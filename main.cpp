@@ -1,7 +1,6 @@
 ﻿#include <Novice.h>
 #include "Vector2.h"
 #include "MT3.h"
-#include "Plane.h"
 #include <imgui.h>
 #include <cmath>
 #include <algorithm>

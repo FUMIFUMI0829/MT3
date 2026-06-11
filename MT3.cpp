@@ -1,6 +1,7 @@
 ﻿#include "MT3.h"
 #include "Novice.h"
 #include <cmath>
+#include <numbers>
 #include <algorithm>
 
 //=================================================================================================//
@@ -121,6 +122,15 @@ Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
 	Vector3 closestPoint = Add(segment.origin, project);
 
 	return closestPoint;
+}
+
+Vector3 Perpendicular(const Vector3& vector) {
+
+	if (vector.x != 0.0f || vector.y != 0.0f) {
+		return { -vector.y, vector.x, 0.0f };
+	}
+
+	return { 0.0f, -vector.z, vector.y };
 }
 
 // 画面表示
@@ -761,4 +771,120 @@ void DrawAABB(const AABB& aabb, const Matrix4x4& viewProjectionMatrix, const Mat
 	Novice::DrawLine((int)screenVertices[1].x, (int)screenVertices[1].y, (int)screenVertices[5].x, (int)screenVertices[5].y, color);
 	Novice::DrawLine((int)screenVertices[2].x, (int)screenVertices[2].y, (int)screenVertices[6].x, (int)screenVertices[6].y, color);
 	Novice::DrawLine((int)screenVertices[3].x, (int)screenVertices[3].y, (int)screenVertices[7].x, (int)screenVertices[7].y, color);
+}
+
+void DrawSphere(const Sphere& sphere, const Matrix4x4 viewProjectionMatrix, const Matrix4x4 viewportMatrix, unsigned int color) {
+	const int kSubdivision = 16;
+
+	const float kLonEvery = (2.0f * float(std::numbers::pi)) / float(kSubdivision);
+
+	const float kLatEvery = float(std::numbers::pi) / float(kSubdivision);
+
+	// 緯度方向に分割
+	for (int latIndex = 0; latIndex < kSubdivision; ++latIndex) {
+
+		float lat = -std::numbers::pi_v<float> / 2.0f + kLatEvery * latIndex;
+
+		// 経度方向に分割
+		for (int lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
+
+			float lon = lonIndex * kLonEvery;
+
+			// a
+			Vector3 a{
+				sphere.center.x +
+				sphere.radius * std::cos(lat) * std::cos(lon),
+
+				sphere.center.y +
+				sphere.radius * std::sin(lat),
+
+				sphere.center.z +
+				sphere.radius * std::cos(lat) * std::sin(lon)
+			};
+
+			// b
+			Vector3 b{
+				sphere.center.x +
+				sphere.radius * std::cos(lat + kLatEvery) * std::cos(lon),
+
+				sphere.center.y +
+				sphere.radius * std::sin(lat + kLatEvery),
+
+				sphere.center.z +
+				sphere.radius * std::cos(lat + kLatEvery) * std::sin(lon)
+			};
+
+			// c
+			Vector3 c{
+				sphere.center.x +
+				sphere.radius * std::cos(lat) * std::cos(lon + kLonEvery),
+
+				sphere.center.y +
+				sphere.radius * std::sin(lat),
+
+				sphere.center.z +
+				sphere.radius * std::cos(lat) * std::sin(lon + kLonEvery)
+			};
+
+			// スクリーン座標変換
+			Vector3 screenA = Transform(Transform(a, viewProjectionMatrix), viewportMatrix);
+
+			Vector3 screenB = Transform(Transform(b, viewProjectionMatrix), viewportMatrix);
+
+			Vector3 screenC = Transform(Transform(c, viewProjectionMatrix), viewportMatrix);
+
+			// 線を引く
+			Novice::DrawLine(int(screenA.x), int(screenA.y), int(screenB.x), int(screenB.y), color);
+			Novice::DrawLine(int(screenA.x), int(screenA.y), int(screenC.x), int(screenC.y), color);
+		}
+	}
+}
+
+void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color) {
+
+	Vector3 center = Multiply(plane.distance, plane.normal);
+
+	Vector3 perpendiculars[4];
+
+	perpendiculars[0] = Normalize(Perpendicular(plane.normal));
+	perpendiculars[1] = { -perpendiculars[0].x, -perpendiculars[0].y, -perpendiculars[0].z };
+	perpendiculars[2] = Cross(plane.normal, perpendiculars[0]);
+	perpendiculars[3] = { -perpendiculars[2].x, -perpendiculars[2].y, -perpendiculars[2].z };
+
+	Vector3 points[4];
+
+	for (int index = 0; index < 4; ++index) {
+		Vector3 extend = Multiply(2.0f, perpendiculars[index]);
+		Vector3 point = Add(center, extend);
+
+		points[index] = Transform(Transform(point, viewProjectionMatrix), viewportMatrix);
+	}
+
+	Novice::DrawLine(
+		static_cast<int>(points[0].x),
+		static_cast<int>(points[0].y),
+		static_cast<int>(points[2].x),
+		static_cast<int>(points[2].y),
+		color);
+
+	Novice::DrawLine(
+		static_cast<int>(points[2].x),
+		static_cast<int>(points[2].y),
+		static_cast<int>(points[1].x),
+		static_cast<int>(points[1].y),
+		color);
+
+	Novice::DrawLine(
+		static_cast<int>(points[1].x),
+		static_cast<int>(points[1].y),
+		static_cast<int>(points[3].x),
+		static_cast<int>(points[3].y),
+		color);
+
+	Novice::DrawLine(
+		static_cast<int>(points[3].x),
+		static_cast<int>(points[3].y),
+		static_cast<int>(points[0].x),
+		static_cast<int>(points[0].y),
+		color);
 }

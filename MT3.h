@@ -1,8 +1,6 @@
 ﻿#pragma once
 #include "Vector3.h"
 #include "Matrix4x4.h"
-#include "Sphere.h"
-#include "Plane.h"
 
 inline constexpr int kColumnWidth = 60;
 inline constexpr int kRowHeight = 20;
@@ -24,6 +22,16 @@ struct Segment {
 
 struct Triangle {
 	Vector3 vertices[3];
+};
+
+struct Plane {
+	Vector3 normal;
+	float distance;
+};
+
+struct Sphere {
+	Vector3 center;
+	float radius;
 };
 
 struct AABB {
@@ -59,6 +67,8 @@ Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix);
 Vector3 Cross(const Vector3& v1, const Vector3& v2);
 
 Vector3 Project(const Vector3& v1, const Vector3& v2);
+
+Vector3 Perpendicular(const Vector3& vector);
 
 // 最近接点
 Vector3 ClosestPoint(const Vector3& point, const Segment& segment);
@@ -147,4 +157,9 @@ void DrawSegment(const Segment& segment, const Matrix4x4& viewProjectionMatrix, 
 void DrawTriangle(const Triangle& triangle, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color);
 
 void DrawAABB(const AABB& aabb1, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color);
+
+void DrawSphere(const Sphere& sphere, const Matrix4x4 viewProjectionMatrix, const Matrix4x4 viewportMatrix, unsigned int color);
+
+void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color);
+
 
