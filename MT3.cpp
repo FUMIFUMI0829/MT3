@@ -1084,3 +1084,57 @@ bool IsCollision(const Line& line, const OBB& obb) {
 
 	return IsCollision(localAABB, localLine);
 }
+
+bool IsCollision(const OBB& obb1, const OBB& obb2) {
+
+	Vector3 axes[15];
+
+	axes[0] = obb1.orientations[0];
+	axes[1] = obb1.orientations[1];
+	axes[2] = obb1.orientations[2];
+
+	axes[3] = obb2.orientations[0];
+	axes[4] = obb2.orientations[1];
+	axes[5] = obb2.orientations[2];
+
+	int index = 6;
+
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			axes[index++] = Cross(obb1.orientations[i], obb2.orientations[j]);
+		}
+	}
+
+	for (int i = 0; i < 15; i++) {
+
+		if (Length(axes[i]) <= 0.0001f) {
+			continue;
+		}
+
+		Vector3 axis = Normalize(axes[i]);
+
+		float distance =
+			std::abs(
+				Dot(
+					Subtract(obb2.center, obb1.center),
+					axis));
+
+		float radius1 = 0.0f;
+
+		radius1 += std::abs(Dot(Multiply(obb1.size.x, obb1.orientations[0]), axis));
+		radius1 += std::abs(Dot(Multiply(obb1.size.y, obb1.orientations[1]), axis));
+		radius1 += std::abs(Dot(Multiply(obb1.size.z, obb1.orientations[2]), axis));
+
+		float radius2 = 0.0f;
+
+		radius2 += std::abs(Dot(Multiply(obb2.size.x, obb2.orientations[0]), axis));
+		radius2 += std::abs(Dot(Multiply(obb2.size.y, obb2.orientations[1]), axis));
+		radius2 += std::abs(Dot(Multiply(obb2.size.z, obb2.orientations[2]), axis));
+
+		if (distance > radius1 + radius2) {
+			return false;
+		}
+	}
+
+	return true;
+}

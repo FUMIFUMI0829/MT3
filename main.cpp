@@ -95,9 +95,13 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		ImGui::DragFloat3("CameraTranslate", &cameraTranslate.x, 0.01f);
 		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
 
-		ImGui::DragFloat3("obb.center", &obb.center.x, 0.01f);
-		ImGui::DragFloat3("obb.orientations", &obb.orientations[0].x, 0.01f);
-		ImGui::DragFloat3("obb.size", &obb.size.x, 0.01f);
+		ImGui::DragFloat3("obb1.center", &obb1.center.x, 0.01f);
+		ImGui::DragFloat3("obb1.orientations", &obb1.orientations[0].x, 0.01f);
+		ImGui::DragFloat3("obb1.size", &obb1.size.x, 0.01f);
+
+		ImGui::DragFloat3("obb2.center", &obb2.center.x, 0.01f);
+		ImGui::DragFloat3("obb2.orientations", &obb2.orientations[0].x, 0.01f);
+		ImGui::DragFloat3("obb2.size", &obb2.size.x, 0.01f);
 
 		ImGui::DragFloat("SegmentOrigin", &segment.origin.x, 0.01f);
 		ImGui::DragFloat3("SegmentDiff", &segment.diff.x, 0.01f);
@@ -107,7 +111,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 		unsigned int objColor = WHITE;
 
-		if (IsCollision(segment, obb)) {
+		if (IsCollision(obb1, obb2)) {
 			objColor = RED;
 		}
 
@@ -121,8 +125,9 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 
-		DrawOBB(obb, viewProjectionMatrix, viewportMatrix, objColor);
-		DrawSegment(segment, viewProjectionMatrix, viewportMatrix, objColor);
+		DrawOBB(obb1, viewProjectionMatrix, viewportMatrix, objColor);
+		DrawOBB(obb2, viewProjectionMatrix, viewportMatrix, objColor);
+	
 		///
 		/// ↑描画処理ここまで
 		///

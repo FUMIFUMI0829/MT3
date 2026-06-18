@@ -170,6 +170,8 @@ bool IsCollision(const Ray& ray, const OBB& obb);
 
 bool IsCollision(const Line& line, const OBB& obb);
 
+bool IsCollision(const OBB& obb1, const OBB& obb2);
+
 void DrawSegment(const Segment& segment, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color);
 
 void DrawTriangle(const Triangle& triangle, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color);
