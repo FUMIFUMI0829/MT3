@@ -13,18 +13,60 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 	Novice::Initialize(kWindowTitle, kWindowWidth, kWindowHeight);
 
-	AABB aabb1{
-		.max{0.0f,0.0f,0.0f},
-		.min{-0.5f,-0.5f,-0.5f},
+	Vector3 rotate{ 0.f,0.f,0.f };
+	OBB obb{
+		.center{-1.f,0.f,0.f},
+		.orientations{{1.f,0.f,0.f},
+					  {0.f,1.f,0.f},
+					  {0.f,0.f,1.f}},
+		.size{0.5f,0.5f,0.5f}
+	};
+
+	Sphere sphere{
+		.center{0.f,0.f,0.f},
+		.radius{0.5f}
 	};
 
 	Segment segment{
-		.origin{-0.7f,0.3f,0.0f},
-		.diff{2.0f,-0.5f,0.0f},
+		.origin{-0.8f, -0.3f, 0.0f},
+		.diff{0.5f, 0.5f, 0.5f}
+	};
+
+	Vector3 rotate1{ 0.0f, 0.0f, 0.0f };
+	Vector3 rotate2{ -0.05f, -2.49f, 0.15f };
+	OBB obb1{
+		.center{0.0f, 0.0f, 0.0f},
+		.orientations = {{1.0f, 0.0f, 0.0f},
+						 {0.0f, 1.0f, 0.0f},
+						 {0.0f, 0.0f, 1.0f}},
+		.size{0.83f, 0.26f, 0.24f}
+	};
+
+	OBB obb2{
+		.center{0.9f, 0.66f, 0.78f},
+		.orientations = {{1.0f, 0.0f, 0.0f},
+						 {0.0f, 1.0f, 0.0f},
+						 {0.0f, 0.0f, 1.0f}},
+		.size{0.5f, 0.37f, 0.5f}
 	};
 
 	Vector3 cameraTranslate{ 0.0f, 1.9f, -6.49f };
 	Vector3 cameraRotate{ 0.26f, 0.0f, 0.0f };
+
+	Matrix4x4 rotateMatrix = Multiply(MakeRotateXMatrix(rotate.x), Multiply(MakeRotateYMatrix(rotate.y), MakeRotateYMatrix(rotate.z)));
+
+	//回転行列から軸を抽出
+	obb.orientations[0].x = rotateMatrix.m[0][0];
+	obb.orientations[0].y = rotateMatrix.m[0][1];
+	obb.orientations[0].z = rotateMatrix.m[0][2];
+
+	obb.orientations[1].x = rotateMatrix.m[1][0];
+	obb.orientations[1].y = rotateMatrix.m[1][1];
+	obb.orientations[1].z = rotateMatrix.m[1][2];
+
+	obb.orientations[2].x = rotateMatrix.m[2][0];
+	obb.orientations[2].y = rotateMatrix.m[2][1];
+	obb.orientations[2].z = rotateMatrix.m[2][2];
 
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
@@ -45,13 +87,6 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
-		aabb1.min.x = (std::min)(aabb1.min.x, aabb1.max.x);
-		aabb1.max.x = (std::max)(aabb1.min.x, aabb1.max.x);
-		aabb1.min.y = (std::min)(aabb1.min.y, aabb1.max.y);
-		aabb1.max.y = (std::max)(aabb1.min.y, aabb1.max.y);
-		aabb1.min.z = (std::min)(aabb1.min.z, aabb1.max.z);
-		aabb1.max.z = (std::max)(aabb1.min.z, aabb1.max.z);
-
 
 
 #ifdef USE_IMGUI
@@ -60,8 +95,12 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		ImGui::DragFloat3("CameraTranslate", &cameraTranslate.x, 0.01f);
 		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
 
-		ImGui::DragFloat3("aabb.min", &aabb1.min.x, 0.01f);
-		ImGui::DragFloat3("aabb.max", &aabb1.max.x, 0.01f);
+		ImGui::DragFloat3("obb.center", &obb.center.x, 0.01f);
+		ImGui::DragFloat3("obb.orientations", &obb.orientations[0].x, 0.01f);
+		ImGui::DragFloat3("obb.size", &obb.size.x, 0.01f);
+
+		ImGui::DragFloat3("sphere.center", &sphere.center.x, 0.01f);
+		ImGui::DragFloat("sphere.radius", &sphere.radius, 0.01f);
 
 		ImGui::DragFloat("SegmentOrigin", &segment.origin.x, 0.01f);
 		ImGui::DragFloat3("SegmentDiff", &segment.diff.x, 0.01f);
@@ -71,7 +110,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 		unsigned int objColor = WHITE;
 
-		if (IsCollision(aabb1, segment)) {
+		if (IsCollision(obb, sphere)) {
 			objColor = RED;
 		}
 
@@ -85,8 +124,9 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 
-		DrawAABB(aabb1, viewProjectionMatrix, viewportMatrix, objColor);
-		DrawSegment(segment, viewProjectionMatrix, viewportMatrix, objColor);
+		DrawOBB(obb, viewProjectionMatrix, viewportMatrix, objColor);
+		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, objColor);
+		//DrawSegment(segment, viewProjectionMatrix, viewportMatrix, objColor);
 		///
 		/// ↑描画処理ここまで
 		///

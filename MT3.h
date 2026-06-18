@@ -39,6 +39,12 @@ struct AABB {
 	Vector3 min;
 };
 
+struct OBB {
+	Vector3 center; // 中心点
+	Vector3 orientations[3]; // 座標軸
+	Vector3 size;
+};
+
 //=================================================================================================//
 // Vector3
 
@@ -152,14 +158,30 @@ bool IsCollision(const AABB& aabb1, const Sphere& sphere);
 
 bool IsCollision(const AABB& aabb, const Segment& segment);
 
+bool IsCollision(const AABB& aabb, const Ray& ray);
+
+bool IsCollision(const AABB& aabb, const Line& line);
+
+bool IsCollision(const OBB& obb, const Sphere &sphere);
+
+bool IsCollision(const Segment& segment, const OBB& obb);
+
+bool IsCollision(const Ray& ray, const OBB& obb);
+
+bool IsCollision(const Line& line, const OBB& obb);
+
 void DrawSegment(const Segment& segment, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color);
 
 void DrawTriangle(const Triangle& triangle, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color);
 
 void DrawAABB(const AABB& aabb1, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color);
 
+void DrawOBB(const OBB&obb,const Matrix4x4 & viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color);
+
 void DrawSphere(const Sphere& sphere, const Matrix4x4 viewProjectionMatrix, const Matrix4x4 viewportMatrix, unsigned int color);
 
 void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color);
+
+
 
 

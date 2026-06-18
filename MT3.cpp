@@ -697,7 +697,7 @@ bool IsCollision(const AABB& aabb1, const Sphere& sphere) {
 		std::clamp(sphere.center.z,aabb1.min.z,aabb1.max.z)
 	};
 	float distance = Length(Vector3{ (closestpoint.x - sphere.center.x), (closestpoint.y - sphere.center.y), (closestpoint.z - sphere.center.z) });
-	
+
 	if (distance <= sphere.radius) {
 		return true;
 	}
@@ -727,7 +727,67 @@ bool IsCollision(const AABB& aabb, const Segment& segment) {
 	float tMin = max(max(tNearX, tNearY), tNearZ);
 	float tMax = min(min(tFarX, tFarY), tFarZ);
 
-	if (tMin <= tMax &&	tMin <= 1.0f &&	tMax >= 0.0f) {
+	if (tMin <= tMax && tMin <= 1.0f && tMax >= 0.0f) {
+		return true;
+	}
+
+	return false;
+}
+
+bool IsCollision(const AABB& aabb, const Ray& ray) {
+
+	float txMin = (aabb.min.x - ray.origin.x) / ray.diff.x;
+	float txMax = (aabb.max.x - ray.origin.x) / ray.diff.x;
+
+	float tyMin = (aabb.min.y - ray.origin.y) / ray.diff.y;
+	float tyMax = (aabb.max.y - ray.origin.y) / ray.diff.y;
+
+	float tzMin = (aabb.min.z - ray.origin.z) / ray.diff.z;
+	float tzMax = (aabb.max.z - ray.origin.z) / ray.diff.z;
+
+	float tNearX = min(txMin, txMax);
+	float tFarX = max(txMin, txMax);
+
+	float tNearY = min(tyMin, tyMax);
+	float tFarY = max(tyMin, tyMax);
+
+	float tNearZ = min(tzMin, tzMax);
+	float tFarZ = max(tzMin, tzMax);
+
+	float tMin = max(max(tNearX, tNearY), tNearZ);
+	float tMax = min(min(tFarX, tFarY), tFarZ);
+
+	if (tMin <= tMax && tMax >= 0.0f) {
+		return true;
+	}
+
+	return false;
+}
+
+bool IsCollision(const AABB& aabb, const Line& line) {
+
+	float txMin = (aabb.min.x - line.origin.x) / line.diff.x;
+	float txMax = (aabb.max.x - line.origin.x) / line.diff.x;
+
+	float tyMin = (aabb.min.y - line.origin.y) / line.diff.y;
+	float tyMax = (aabb.max.y - line.origin.y) / line.diff.y;
+
+	float tzMin = (aabb.min.z - line.origin.z) / line.diff.z;
+	float tzMax = (aabb.max.z - line.origin.z) / line.diff.z;
+
+	float tNearX = min(txMin, txMax);
+	float tFarX = max(txMin, txMax);
+
+	float tNearY = min(tyMin, tyMax);
+	float tFarY = max(tyMin, tyMax);
+
+	float tNearZ = min(tzMin, tzMax);
+	float tFarZ = max(tzMin, tzMax);
+
+	float tMin = max(max(tNearX, tNearY), tNearZ);
+	float tMax = min(min(tFarX, tFarY), tFarZ);
+
+	if (tMin <= tMax) {
 		return true;
 	}
 
@@ -887,4 +947,140 @@ void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const 
 		static_cast<int>(points[0].x),
 		static_cast<int>(points[0].y),
 		color);
+}
+
+Matrix4x4 MakeOBBWorldMatrix(const OBB& obb) {
+
+	Matrix4x4 result = MakeIdentity4x4();
+
+	result.m[0][0] = obb.orientations[0].x;
+	result.m[0][1] = obb.orientations[0].y;
+	result.m[0][2] = obb.orientations[0].z;
+
+	result.m[1][0] = obb.orientations[1].x;
+	result.m[1][1] = obb.orientations[1].y;
+	result.m[1][2] = obb.orientations[1].z;
+
+	result.m[2][0] = obb.orientations[2].x;
+	result.m[2][1] = obb.orientations[2].y;
+	result.m[2][2] = obb.orientations[2].z;
+
+	result.m[3][0] = obb.center.x;
+	result.m[3][1] = obb.center.y;
+	result.m[3][2] = obb.center.z;
+
+	return result;
+}
+
+bool IsCollision(const OBB& obb, const Sphere& sphere) {
+
+	Matrix4x4 inverseMatrix = Inverse(MakeOBBWorldMatrix(obb));
+
+	Sphere localSphere{};
+	localSphere.center = Transform(sphere.center, inverseMatrix);
+	localSphere.radius = sphere.radius;
+
+	AABB localAABB{};
+	localAABB.min = { -obb.size.x, -obb.size.y, -obb.size.z };
+	localAABB.max = { obb.size.x, obb.size.y, obb.size.z };
+
+	return IsCollision(localAABB, localSphere);
+}
+
+void DrawOBB(const OBB& obb, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color) {
+
+	Vector3 axisX = Multiply(obb.size.x, obb.orientations[0]);
+	Vector3 axisY = Multiply(obb.size.y, obb.orientations[1]);
+	Vector3 axisZ = Multiply(obb.size.z, obb.orientations[2]);
+
+	Vector3 vertices[8];
+
+	vertices[0] = Add(Add(Add(obb.center, axisX), axisY), axisZ);
+	vertices[1] = Add(Add(Subtract(obb.center, axisX), axisY), axisZ);
+	vertices[2] = Add(Subtract(Add(obb.center, axisX), axisY), axisZ);
+	vertices[3] = Add(Subtract(Subtract(obb.center, axisX), axisY), axisZ);
+
+	vertices[4] = Subtract(Add(Add(obb.center, axisX), axisY), axisZ);
+	vertices[5] = Subtract(Add(Subtract(obb.center, axisX), axisY), axisZ);
+	vertices[6] = Subtract(Subtract(Add(obb.center, axisX), axisY), axisZ);
+	vertices[7] = Subtract(Subtract(Subtract(obb.center, axisX), axisY), axisZ);
+
+	Vector3 screen[8];
+
+	for (int i = 0; i < 8; i++) {
+		Vector3 ndc = Transform(vertices[i], viewProjectionMatrix);
+		screen[i] = Transform(ndc, viewportMatrix);
+	}
+
+	Novice::DrawLine((int)screen[0].x, (int)screen[0].y, (int)screen[1].x, (int)screen[1].y, color);
+	Novice::DrawLine((int)screen[1].x, (int)screen[1].y, (int)screen[3].x, (int)screen[3].y, color);
+	Novice::DrawLine((int)screen[3].x, (int)screen[3].y, (int)screen[2].x, (int)screen[2].y, color);
+	Novice::DrawLine((int)screen[2].x, (int)screen[2].y, (int)screen[0].x, (int)screen[0].y, color);
+
+	Novice::DrawLine((int)screen[4].x, (int)screen[4].y, (int)screen[5].x, (int)screen[5].y, color);
+	Novice::DrawLine((int)screen[5].x, (int)screen[5].y, (int)screen[7].x, (int)screen[7].y, color);
+	Novice::DrawLine((int)screen[7].x, (int)screen[7].y, (int)screen[6].x, (int)screen[6].y, color);
+	Novice::DrawLine((int)screen[6].x, (int)screen[6].y, (int)screen[4].x, (int)screen[4].y, color);
+
+	Novice::DrawLine((int)screen[0].x, (int)screen[0].y, (int)screen[4].x, (int)screen[4].y, color);
+	Novice::DrawLine((int)screen[1].x, (int)screen[1].y, (int)screen[5].x, (int)screen[5].y, color);
+	Novice::DrawLine((int)screen[2].x, (int)screen[2].y, (int)screen[6].x, (int)screen[6].y, color);
+	Novice::DrawLine((int)screen[3].x, (int)screen[3].y, (int)screen[7].x, (int)screen[7].y, color);
+}
+
+bool IsCollision(const Segment& segment, const OBB& obb) {
+
+	Matrix4x4 inverseMatrix = Inverse(MakeOBBWorldMatrix(obb));
+
+	Segment localSegment{};
+	localSegment.origin = Transform(segment.origin, inverseMatrix);
+
+	Vector3 end = Add(segment.origin, segment.diff);
+	Vector3 localEnd = Transform(end, inverseMatrix);
+
+	localSegment.diff = Subtract(localEnd, localSegment.origin);
+
+	AABB localAABB{};
+	localAABB.min = { -obb.size.x, -obb.size.y, -obb.size.z };
+	localAABB.max = { obb.size.x, obb.size.y, obb.size.z };
+
+	return IsCollision(localAABB, localSegment);
+}
+
+bool IsCollision(const Ray& ray, const OBB& obb) {
+
+	Matrix4x4 inverseMatrix = Inverse(MakeOBBWorldMatrix(obb));
+
+	Ray localRay{};
+	localRay.origin = Transform(ray.origin, inverseMatrix);
+
+	Vector3 end = Add(ray.origin, ray.diff);
+	Vector3 localEnd = Transform(end, inverseMatrix);
+
+	localRay.diff = Subtract(localEnd, localRay.origin);
+
+	AABB localAABB{};
+	localAABB.min = { -obb.size.x, -obb.size.y, -obb.size.z };
+	localAABB.max = { obb.size.x, obb.size.y, obb.size.z };
+
+	return IsCollision(localAABB, localRay);
+}
+
+bool IsCollision(const Line& line, const OBB& obb) {
+
+	Matrix4x4 inverseMatrix = Inverse(MakeOBBWorldMatrix(obb));
+
+	Line localLine{};
+	localLine.origin = Transform(line.origin, inverseMatrix);
+
+	Vector3 end = Add(line.origin, line.diff);
+	Vector3 localEnd = Transform(end, inverseMatrix);
+
+	localLine.diff = Subtract(localEnd, localLine.origin);
+
+	AABB localAABB{};
+	localAABB.min = { -obb.size.x, -obb.size.y, -obb.size.z };
+	localAABB.max = { obb.size.x, obb.size.y, obb.size.z };
+
+	return IsCollision(localAABB, localLine);
 }
