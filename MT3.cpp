@@ -133,6 +133,14 @@ Vector3 Perpendicular(const Vector3& vector) {
 	return { 0.0f, -vector.z, vector.y };
 }
 
+Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t) {
+	Vector3 result{};
+	result.x = v1.x + (v2.x - v1.x) * t;
+	result.y = v1.y + (v2.y - v1.y) * t;
+	result.z = v1.z + (v2.z - v1.z) * t;
+	return result;
+}
+
 // 画面表示
 void VectorScreenPrintf(int x, int y, const Vector3& vector, const char* label) {
 	Novice::ScreenPrintf(x, y, "%.02f", vector.x);
@@ -1137,4 +1145,29 @@ bool IsCollision(const OBB& obb1, const OBB& obb2) {
 	}
 
 	return true;
+}
+
+void DrawBezier(const Vector3& controlPoint0, const Vector3& controlPoint1, const Vector3& controlPoint2, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color) {
+	Vector3 prevControlPoint = controlPoint0;
+
+	for (float t = 0; t < 1.f; t += 0.01f) {
+		Vector3 controlPoint01 = Lerp(controlPoint0, controlPoint1, t);
+		Vector3 controlPoint12 = Lerp(controlPoint1, controlPoint2, t);
+		Vector3 controlPoint = Lerp(controlPoint01, controlPoint12, t);
+
+		Vector3 prevScreen = Transform(Transform(prevControlPoint, viewProjectionMatrix), viewportMatrix);
+		Vector3 currentScreen = Transform(Transform(controlPoint, viewProjectionMatrix), viewportMatrix);
+
+		Novice::DrawLine((int)prevScreen.x, (int)prevScreen.y, (int)currentScreen.x, (int)currentScreen.y, color);
+
+		prevControlPoint = controlPoint;
+
+	}
+
+	Sphere controlPointSphere[3] = { {controlPoint0,0.01f},{controlPoint1,0.01f},{controlPoint2,0.01f} };
+
+	for (int i = 0; i < 3; ++i) {
+		DrawSphere(controlPointSphere[i], viewProjectionMatrix, viewportMatrix, color);
+	}
+
 }

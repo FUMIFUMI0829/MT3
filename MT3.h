@@ -79,6 +79,8 @@ Vector3 Perpendicular(const Vector3& vector);
 // 最近接点
 Vector3 ClosestPoint(const Vector3& point, const Segment& segment);
 
+Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t);
+
 // 画面表示
 void VectorScreenPrintf(int x, int y, const Vector3& vector, const char* label);
 //=================================================================================================//
@@ -183,6 +185,8 @@ void DrawOBB(const OBB&obb,const Matrix4x4 & viewProjectionMatrix, const Matrix4
 void DrawSphere(const Sphere& sphere, const Matrix4x4 viewProjectionMatrix, const Matrix4x4 viewportMatrix, unsigned int color);
 
 void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color);
+
+void DrawBezier(const Vector3& controlPoint0, const Vector3& controlPoint1, const Vector3& controlPoint2, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, unsigned int color);
 
 
 
