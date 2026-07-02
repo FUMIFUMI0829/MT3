@@ -1121,11 +1121,7 @@ bool IsCollision(const OBB& obb1, const OBB& obb2) {
 
 		Vector3 axis = Normalize(axes[i]);
 
-		float distance =
-			std::abs(
-				Dot(
-					Subtract(obb2.center, obb1.center),
-					axis));
+		float distance = std::abs(Dot(Subtract(obb2.center, obb1.center), axis));
 
 		float radius1 = 0.0f;
 
@@ -1171,3 +1167,7 @@ void DrawBezier(const Vector3& controlPoint0, const Vector3& controlPoint1, cons
 	}
 
 }
+
+Matrix4x4 operator+(const Matrix4x4& m1, const Matrix4x4& m2) { return Add(m1, m2); }
+Matrix4x4 operator-(const Matrix4x4& m1, const Matrix4x4& m2) { return Subtract(m1, m2); }
+Matrix4x4 operator*(const Matrix4x4& m1, const Matrix4x4& m2) { return Multiply(m1, m2); }
