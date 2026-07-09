@@ -4,6 +4,7 @@
 #include <imgui.h>
 #include <cmath>
 #include <algorithm>
+#include <numbers>
 
 const char kWindowTitle[] = "LE2B_11_コウサカ_タカフミ";
 const int kWindowWidth = 1280;
@@ -16,20 +17,17 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	Vector3 cameraTranslate{ 0.0f, 1.9f, -6.49f };
 	Vector3 cameraRotate{ 0.26f, 0.0f, 0.0f };
 
-	Spring spring{};
-	spring.anchor             = { 0.0f, 0.0f, 0.0f };
-	spring.naturalLength      = 1.0f;
-	spring.stiffness          = 100.0f;
-	spring.dampingCoefficient = 2.0f;
+	const float deltaTime = 1.0f / 60.0f;
+	float angularVelocity = 3.14f;
+	float radius = 0.8f;
+	Vector3 center = { 0.0f, 0.0f, 0.0f };
+	float angle = 0.0f;
+	bool isSimulating = false;
 
 	Ball ball{};
-	ball.position = { 1.2f, 0.0f, 0.0f };
-	ball.mass     = 2.0f;
-	ball.radius   = 0.05f;
-	ball.color    = BLUE;
-
-	const float deltaTime = 1.0f / 60.0f;
-	bool isSimulating = false;
+	ball.position = { center.x + std::cos(angle) * radius, center.y + std::sin(angle) * radius, center.z };
+	ball.radius = 0.05f;
+	ball.color = BLUE;
 
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
@@ -51,60 +49,31 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
 #ifdef USE_IMGUI
-		ImGui::Begin("Spring");
+		ImGui::Begin("CircularMotion");
 
 		ImGui::DragFloat3("CameraTranslate", &cameraTranslate.x, 0.01f);
-		ImGui::DragFloat3("CameraRotate",    &cameraRotate.x,    0.01f);
+		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
 		ImGui::Separator();
 
-		ImGui::DragFloat3("anchor",             &spring.anchor.x,             0.01f);
-		ImGui::DragFloat ("naturalLength",      &spring.naturalLength,        0.01f);
-		ImGui::DragFloat ("stiffness",          &spring.stiffness,            1.0f);
-		ImGui::DragFloat ("dampingCoefficient", &spring.dampingCoefficient,   0.1f);
-		ImGui::Separator();
-
-		ImGui::DragFloat3("ball.position", &ball.position.x, 0.01f);
-		ImGui::DragFloat ("ball.mass",     &ball.mass,        0.1f);
-		ImGui::DragFloat ("ball.radius",   &ball.radius,      0.001f);
+		ImGui::DragFloat("angularVelocity", &angularVelocity, 0.01f);
+		ImGui::DragFloat("radius", &radius, 0.01f);
+		ImGui::DragFloat3("center", &center.x, 0.01f);
+		ImGui::Text("angle: %.3f", angle);
 
 		if (ImGui::Button(isSimulating ? "Stop" : "Start")) {
 			isSimulating = !isSimulating;
-			if (isSimulating) {
-				ball.velocity     = { 0.0f, 0.0f, 0.0f };
-				ball.acceleration = { 0.0f, 0.0f, 0.0f };
-			}
 		}
 
 		ImGui::End();
 #endif
 
-		if (preKeys[DIK_SPACE] == 0 && keys[DIK_SPACE] != 0) {
-			isSimulating = !isSimulating;
-			if (isSimulating) {
-				ball.velocity     = { 0.0f, 0.0f, 0.0f };
-				ball.acceleration = { 0.0f, 0.0f, 0.0f };
-			}
-		}
-
 		if (isSimulating) {
-			Vector3 diff   = ball.position - spring.anchor;
-			float length   = Length(diff);
-			if (length != 0.0f) {
-				Vector3 direction    = Normalize(diff);
-				Vector3 restPosition = spring.anchor + direction * spring.naturalLength;
-				Vector3 displacement = ball.position - restPosition;
-				Vector3 restoringForce = -spring.stiffness * displacement;
-				Vector3 dampingForce   = -spring.dampingCoefficient * ball.velocity;
-				Vector3 force          = restoringForce + dampingForce;
-				ball.acceleration      = force / ball.mass;
-			}
-			ball.velocity += ball.acceleration * deltaTime;
-			ball.position += ball.velocity     * deltaTime;
-		}
+			angle += angularVelocity * deltaTime;
 
-		Segment seg{ spring.anchor, ball.position - spring.anchor };
-		Sphere anchorSphere{ spring.anchor, 0.02f };
-		Sphere ballSphere{ ball.position, ball.radius };
+			ball.position.x = center.x + std::cos(angle) * radius;
+			ball.position.y = center.y + std::sin(angle) * radius;
+			ball.position.z = center.z;
+		}
 
 		///
 		/// ↑更新処理ここまで
@@ -116,13 +85,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 
-		// 線分
-		DrawSegment(seg, viewProjectionMatrix, viewportMatrix, WHITE);
-
-		// アンカー
-		DrawSphere(anchorSphere, viewProjectionMatrix, viewportMatrix, RED);
-
-		// ボール
+		Sphere ballSphere{ ball.position, ball.radius };
 		DrawSphere(ballSphere, viewProjectionMatrix, viewportMatrix, ball.color);
 
 		///
