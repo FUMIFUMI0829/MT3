@@ -45,6 +45,16 @@ struct OBB {
 	Vector3 size;
 };
 
+// 振り子
+struct Pendulum {
+	Vector3 anchor;
+	float length;
+	float angle;
+	float angularVelocity;
+	float angularAcceleration;
+};
+
+// バネ
 struct Spring {
 	Vector3 anchor;
 	float naturalLength;

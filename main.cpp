@@ -4,7 +4,6 @@
 #include <imgui.h>
 #include <cmath>
 #include <algorithm>
-#include <numbers>
 
 const char kWindowTitle[] = "LE2B_11_コウサカ_タカフミ";
 const int kWindowWidth = 1280;
@@ -17,17 +16,15 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	Vector3 cameraTranslate{ 0.0f, 1.9f, -6.49f };
 	Vector3 cameraRotate{ 0.26f, 0.0f, 0.0f };
 
-	const float deltaTime = 1.0f / 60.0f;
-	float angularVelocity = 3.14f;
-	float radius = 0.8f;
-	Vector3 center = { 0.0f, 0.0f, 0.0f };
-	float angle = 0.0f;
-	bool isSimulating = false;
+	Pendulum pendulum;
+	pendulum.anchor = { 0.0f, 1.0f, 0.0f };
+	pendulum.length = 0.8f;
+	pendulum.angle = 0.7f;
+	pendulum.angularVelocity = 0.0f;
+	pendulum.angularAcceleration = 0.0f;
 
-	Ball ball{};
-	ball.position = { center.x + std::cos(angle) * radius, center.y + std::sin(angle) * radius, center.z };
-	ball.radius = 0.05f;
-	ball.color = BLUE;
+	const float deltaTime = 1.0f / 60.0f;
+	bool isSimulating = false;
 
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
@@ -49,31 +46,39 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
 #ifdef USE_IMGUI
-		ImGui::Begin("CircularMotion");
+		ImGui::Begin("Pendulum");
 
 		ImGui::DragFloat3("CameraTranslate", &cameraTranslate.x, 0.01f);
 		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
 		ImGui::Separator();
 
-		ImGui::DragFloat("angularVelocity", &angularVelocity, 0.01f);
-		ImGui::DragFloat("radius", &radius, 0.01f);
-		ImGui::DragFloat3("center", &center.x, 0.01f);
-		ImGui::Text("angle: %.3f", angle);
+		ImGui::DragFloat3("anchor", &pendulum.anchor.x, 0.01f);
+		ImGui::DragFloat("length", &pendulum.length, 0.01f);
+		ImGui::DragFloat("angle", &pendulum.angle, 0.01f);
+		ImGui::Text("angularVelocity: %.3f", pendulum.angularVelocity);
 
 		if (ImGui::Button(isSimulating ? "Stop" : "Start")) {
 			isSimulating = !isSimulating;
+			if (isSimulating) {
+				pendulum.angularVelocity = 0.0f;
+				pendulum.angularAcceleration = 0.0f;
+			}
 		}
 
 		ImGui::End();
 #endif
 
 		if (isSimulating) {
-			angle += angularVelocity * deltaTime;
-
-			ball.position.x = center.x + std::cos(angle) * radius;
-			ball.position.y = center.y + std::sin(angle) * radius;
-			ball.position.z = center.z;
+			pendulum.angularAcceleration = -(9.8f / pendulum.length) * std::sin(pendulum.angle);
+			pendulum.angularVelocity += pendulum.angularAcceleration * deltaTime;
+			pendulum.angle += pendulum.angularVelocity * deltaTime;
 		}
+
+		// 振り子の先端位置
+		Vector3 tipPosition;
+		tipPosition.x = pendulum.anchor.x + std::sin(pendulum.angle) * pendulum.length;
+		tipPosition.y = pendulum.anchor.y - std::cos(pendulum.angle) * pendulum.length;
+		tipPosition.z = pendulum.anchor.z;
 
 		///
 		/// ↑更新処理ここまで
@@ -85,8 +90,17 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 
-		Sphere ballSphere{ ball.position, ball.radius };
-		DrawSphere(ballSphere, viewProjectionMatrix, viewportMatrix, ball.color);
+		// アンカーから先端への線分
+		Segment pendulumRod{ pendulum.anchor, tipPosition - pendulum.anchor };
+		DrawSegment(pendulumRod, viewProjectionMatrix, viewportMatrix, WHITE);
+
+		// アンカー点
+		Sphere anchorSphere{ pendulum.anchor, 0.02f };
+		DrawSphere(anchorSphere, viewProjectionMatrix, viewportMatrix, WHITE);
+
+		// 振り子の球
+		Sphere pendulumBall{ tipPosition, 0.05f };
+		DrawSphere(pendulumBall, viewProjectionMatrix, viewportMatrix, WHITE);
 
 		///
 		/// ↑描画処理ここまで
