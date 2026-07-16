@@ -46,6 +46,14 @@ struct OBB {
 };
 
 // 振り子
+struct ConicalPendulum {
+	Vector3 anchor;
+	float length;
+	float halfApexAngle;
+	float angle;
+	float angularVelocity;
+};
+
 struct Pendulum {
 	Vector3 anchor;
 	float length;

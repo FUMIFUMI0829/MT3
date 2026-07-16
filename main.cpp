@@ -16,12 +16,16 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	Vector3 cameraTranslate{ 0.0f, 1.9f, -6.49f };
 	Vector3 cameraRotate{ 0.26f, 0.0f, 0.0f };
 
-	Pendulum pendulum;
-	pendulum.anchor = { 0.0f, 1.0f, 0.0f };
-	pendulum.length = 0.8f;
-	pendulum.angle = 0.7f;
-	pendulum.angularVelocity = 0.0f;
-	pendulum.angularAcceleration = 0.0f;
+	ConicalPendulum conicalPendulum;
+	conicalPendulum.anchor          = { 0.0f, 1.0f, 0.0f };
+	conicalPendulum.length          = 0.8f;
+	conicalPendulum.halfApexAngle   = 0.7f;
+	conicalPendulum.angle           = 0.0f;
+	conicalPendulum.angularVelocity = 0.0f;
+
+	Ball ball{};
+	ball.radius = 0.05f;
+	ball.color  = BLUE;
 
 	const float deltaTime = 1.0f / 60.0f;
 	bool isSimulating = false;
@@ -46,22 +50,22 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
 #ifdef USE_IMGUI
-		ImGui::Begin("Pendulum");
+		ImGui::Begin("ConicalPendulum");
 
 		ImGui::DragFloat3("CameraTranslate", &cameraTranslate.x, 0.01f);
-		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
+		ImGui::DragFloat3("CameraRotate",    &cameraRotate.x,    0.01f);
 		ImGui::Separator();
 
-		ImGui::DragFloat3("anchor", &pendulum.anchor.x, 0.01f);
-		ImGui::DragFloat("length", &pendulum.length, 0.01f);
-		ImGui::DragFloat("angle", &pendulum.angle, 0.01f);
-		ImGui::Text("angularVelocity: %.3f", pendulum.angularVelocity);
+		ImGui::DragFloat3("anchor",        &conicalPendulum.anchor.x,        0.01f);
+		ImGui::DragFloat ("length",        &conicalPendulum.length,           0.01f);
+		ImGui::DragFloat ("halfApexAngle", &conicalPendulum.halfApexAngle,    0.01f);
+		ImGui::Text("angle: %.3f", conicalPendulum.angle);
+		ImGui::Text("angularVelocity: %.3f", conicalPendulum.angularVelocity);
 
 		if (ImGui::Button(isSimulating ? "Stop" : "Start")) {
 			isSimulating = !isSimulating;
 			if (isSimulating) {
-				pendulum.angularVelocity = 0.0f;
-				pendulum.angularAcceleration = 0.0f;
+				conicalPendulum.angle = 0.0f;
 			}
 		}
 
@@ -69,16 +73,15 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 #endif
 
 		if (isSimulating) {
-			pendulum.angularAcceleration = -(9.8f / pendulum.length) * std::sin(pendulum.angle);
-			pendulum.angularVelocity += pendulum.angularAcceleration * deltaTime;
-			pendulum.angle += pendulum.angularVelocity * deltaTime;
+			conicalPendulum.angularVelocity = std::sqrt(9.8f / (conicalPendulum.length * std::cos(conicalPendulum.halfApexAngle)));
+			conicalPendulum.angle          += conicalPendulum.angularVelocity * deltaTime;
 		}
 
-		// 振り子の先端位置
-		Vector3 tipPosition;
-		tipPosition.x = pendulum.anchor.x + std::sin(pendulum.angle) * pendulum.length;
-		tipPosition.y = pendulum.anchor.y - std::cos(pendulum.angle) * pendulum.length;
-		tipPosition.z = pendulum.anchor.z;
+		float circleRadius = std::sin(conicalPendulum.halfApexAngle) * conicalPendulum.length;
+		float dropHeight   = std::cos(conicalPendulum.halfApexAngle) * conicalPendulum.length;
+		ball.position.x = conicalPendulum.anchor.x + std::cos(conicalPendulum.angle) * circleRadius;
+		ball.position.y = conicalPendulum.anchor.y - dropHeight;
+		ball.position.z = conicalPendulum.anchor.z - std::sin(conicalPendulum.angle) * circleRadius;
 
 		///
 		/// ↑更新処理ここまで
@@ -90,17 +93,13 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 
-		// アンカーから先端への線分
-		Segment pendulumRod{ pendulum.anchor, tipPosition - pendulum.anchor };
+		Segment pendulumRod{ conicalPendulum.anchor, ball.position - conicalPendulum.anchor };
 		DrawSegment(pendulumRod, viewProjectionMatrix, viewportMatrix, WHITE);
 
-		// アンカー点
-		Sphere anchorSphere{ pendulum.anchor, 0.02f };
-		DrawSphere(anchorSphere, viewProjectionMatrix, viewportMatrix, WHITE);
+		Sphere anchorSphere{ conicalPendulum.anchor, 0.02f };
 
-		// 振り子の球
-		Sphere pendulumBall{ tipPosition, 0.05f };
-		DrawSphere(pendulumBall, viewProjectionMatrix, viewportMatrix, WHITE);
+		Sphere bobSphere{ ball.position, ball.radius };
+		DrawSphere(bobSphere, viewProjectionMatrix, viewportMatrix, ball.color);
 
 		///
 		/// ↑描画処理ここまで
