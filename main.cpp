@@ -16,8 +16,15 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	Vector3 cameraTranslate{ 0.0f, 1.9f, -6.49f };
 	Vector3 cameraRotate{ 0.26f, 0.0f, 0.0f };
 
-	Segment segment{ {-2.0f, -1.0f, 0.0f}, {3.0f, 2.0f, 2.0f} };
-	Vector3 point{ -1.5f, 0.6f, 0.6f };
+	AABB aabb{
+		.max{  0.5f,  0.5f,  0.5f },
+		.min{ -0.5f, -0.5f, -0.5f },
+	};
+
+	Sphere sphere{
+		.center{ 0.0f, 0.0f, 0.0f },
+		.radius{ 0.5f },
+	};
 
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
@@ -38,23 +45,22 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
-		// pointを線分に射影したベクトルと最近接点を計算
-		Vector3 project      = Project(Subtract(point, segment.origin), segment.diff);
-		Vector3 closestPoint = ClosestPoint(point, segment);
+		bool isColliding = IsCollision(aabb, sphere);
+		unsigned int drawColor = isColliding ? RED : WHITE;
 
 #ifdef USE_IMGUI
-		ImGui::Begin("ProjectAndClosestPoint");
+		ImGui::Begin("AABBvsSphere");
 
 		ImGui::DragFloat3("CameraTranslate", &cameraTranslate.x, 0.01f);
 		ImGui::DragFloat3("CameraRotate",    &cameraRotate.x,    0.01f);
 		ImGui::Separator();
 
-		ImGui::DragFloat3("segment.origin", &segment.origin.x, 0.01f);
-		ImGui::DragFloat3("segment.diff",   &segment.diff.x,   0.01f);
-		ImGui::DragFloat3("point",          &point.x,          0.01f);
+		ImGui::DragFloat3("aabb.min",     &aabb.min.x,     0.01f);
+		ImGui::DragFloat3("aabb.max",     &aabb.max.x,     0.01f);
 		ImGui::Separator();
 
-		ImGui::InputFloat3("Project", &project.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
+		ImGui::DragFloat3("sphere.center", &sphere.center.x, 0.01f);
+		ImGui::DragFloat ("sphere.radius", &sphere.radius,   0.01f);
 
 		ImGui::End();
 #endif
@@ -68,16 +74,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		///
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
-
-		Vector3 segmentStart = Transform(Transform(segment.origin, viewProjectionMatrix), viewportMatrix);
-		Vector3 segmentEnd   = Transform(Transform(Add(segment.origin, segment.diff), viewProjectionMatrix), viewportMatrix);
-		Novice::DrawLine(int(segmentStart.x), int(segmentStart.y), int(segmentEnd.x), int(segmentEnd.y), WHITE);
-
-		Sphere pointSphere{ point, 0.01f };
-		DrawSphere(pointSphere, viewProjectionMatrix, viewportMatrix, RED);
-
-		Sphere closestPointSphere{ closestPoint, 0.01f };
-		DrawSphere(closestPointSphere, viewProjectionMatrix, viewportMatrix, BLACK);
+		DrawAABB(aabb, viewProjectionMatrix, viewportMatrix, drawColor);
+		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, drawColor);
 
 		///
 		/// ↑描画処理ここまで
