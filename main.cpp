@@ -1,4 +1,4 @@
-#include <Novice.h>
+﻿#include <Novice.h>
 #include "Vector2.h"
 #include "MT3.h"
 #include <imgui.h>
@@ -16,20 +16,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	Vector3 cameraTranslate{ 0.0f, 1.9f, -6.49f };
 	Vector3 cameraRotate{ 0.26f, 0.0f, 0.0f };
 
-	Plane plane;
-	plane.normal   = Normalize({ -0.2f, 0.9f, -0.3f });
-	plane.distance = 0.0f;
-
-	Ball ball{};
-	ball.position = { 0.8f, 1.2f, 0.3f };
-	ball.mass     = 2.0f;
-	ball.radius   = 0.05f;
-	ball.color    = WHITE;
-
-	float restitution = 0.8f; // 反発係数
-
-	const float deltaTime = 1.0f / 60.0f;
-	bool isSimulating = false;
+	Segment segment{ {-2.0f, -1.0f, 0.0f}, {3.0f, 2.0f, 2.0f} };
+	Vector3 point{ -1.5f, 0.6f, 0.6f };
 
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
@@ -50,43 +38,26 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
 
+		// pointを線分に射影したベクトルと最近接点を計算
+		Vector3 project      = Project(Subtract(point, segment.origin), segment.diff);
+		Vector3 closestPoint = ClosestPoint(point, segment);
+
 #ifdef USE_IMGUI
-		ImGui::Begin("BallOnPlane");
+		ImGui::Begin("ProjectAndClosestPoint");
 
 		ImGui::DragFloat3("CameraTranslate", &cameraTranslate.x, 0.01f);
 		ImGui::DragFloat3("CameraRotate",    &cameraRotate.x,    0.01f);
 		ImGui::Separator();
 
-		ImGui::DragFloat3("plane.normal",   &plane.normal.x,   0.01f);
-		ImGui::DragFloat ("plane.distance", &plane.distance,   0.01f);
+		ImGui::DragFloat3("segment.origin", &segment.origin.x, 0.01f);
+		ImGui::DragFloat3("segment.diff",   &segment.diff.x,   0.01f);
+		ImGui::DragFloat3("point",          &point.x,          0.01f);
 		ImGui::Separator();
 
-		ImGui::DragFloat3("ball.position", &ball.position.x, 0.01f);
-		ImGui::DragFloat ("restitution",   &restitution,     0.01f, 0.0f, 1.0f);
-
-		if (ImGui::Button(isSimulating ? "Stop" : "Start")) {
-			isSimulating = !isSimulating;
-			if (isSimulating) {
-				ball.velocity     = { 0.0f, 0.0f, 0.0f };
-				ball.acceleration = { 0.0f, 0.0f, 0.0f };
-			}
-		}
+		ImGui::InputFloat3("Project", &project.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
 
 		ImGui::End();
 #endif
-
-		if (isSimulating) {
-			ball.acceleration = { 0.0f, -9.8f, 0.0f };
-			ball.velocity += ball.acceleration * deltaTime;
-			ball.position += ball.velocity     * deltaTime;
-
-			if (IsCollision(Sphere{ ball.position, ball.radius }, plane)) {
-				Vector3 reflectedVelocity  = Reflect(ball.velocity, plane.normal);
-				Vector3 normalComponent    = Project(reflectedVelocity, plane.normal);
-				Vector3 tangentComponent   = reflectedVelocity - normalComponent;
-				ball.velocity              = normalComponent * restitution + tangentComponent;
-			}
-		}
 
 		///
 		/// ↑更新処理ここまで
@@ -97,10 +68,16 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		///
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
-		DrawPlane(plane, viewProjectionMatrix, viewportMatrix, WHITE);
 
-		Sphere ballSphere{ ball.position, ball.radius };
-		DrawSphere(ballSphere, viewProjectionMatrix, viewportMatrix, ball.color);
+		Vector3 segmentStart = Transform(Transform(segment.origin, viewProjectionMatrix), viewportMatrix);
+		Vector3 segmentEnd   = Transform(Transform(Add(segment.origin, segment.diff), viewProjectionMatrix), viewportMatrix);
+		Novice::DrawLine(int(segmentStart.x), int(segmentStart.y), int(segmentEnd.x), int(segmentEnd.y), WHITE);
+
+		Sphere pointSphere{ point, 0.01f };
+		DrawSphere(pointSphere, viewProjectionMatrix, viewportMatrix, RED);
+
+		Sphere closestPointSphere{ closestPoint, 0.01f };
+		DrawSphere(closestPointSphere, viewProjectionMatrix, viewportMatrix, BLACK);
 
 		///
 		/// ↑描画処理ここまで
