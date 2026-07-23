@@ -121,11 +121,10 @@ Vector3 Reflect(const Vector3& input, const Vector3& normal) {
 Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
 	Vector3 originToPoint = Subtract(point, segment.origin);
 
-	Vector3 project = Project(originToPoint, segment.diff);
+	float t = Dot(originToPoint, segment.diff) / Dot(segment.diff, segment.diff);
+	t = std::clamp(t, 0.0f, 1.0f);
 
-	Vector3 closestPoint = Add(segment.origin, project);
-
-	return closestPoint;
+	return Add(segment.origin, Multiply(t, segment.diff));
 }
 
 Vector3 Perpendicular(const Vector3& vector) {
@@ -702,11 +701,11 @@ bool IsCollision(const AABB& aabb1, const AABB& aabb2) {
 	return false;
 }
 
-bool IsCollision(const AABB& aabb1, const Sphere& sphere) {
+bool IsCollision(const AABB& aabb, const Sphere& sphere) {
 	Vector3 closestpoint{
-		std::clamp(sphere.center.x,aabb1.min.x,aabb1.max.x),
-		std::clamp(sphere.center.y,aabb1.min.y,aabb1.max.y),
-		std::clamp(sphere.center.z,aabb1.min.z,aabb1.max.z)
+		std::clamp(sphere.center.x,aabb.min.x,aabb.max.x),
+		std::clamp(sphere.center.y,aabb.min.y,aabb.max.y),
+		std::clamp(sphere.center.z,aabb.min.z,aabb.max.z)
 	};
 	float distance = Length(Vector3{ (closestpoint.x - sphere.center.x), (closestpoint.y - sphere.center.y), (closestpoint.z - sphere.center.z) });
 
